@@ -9,6 +9,8 @@ use ratatui::prelude::{Color, Stylize};
 use ratatui::style::Style;
 use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph};
 
+const PATH_TO_CLI_APP: &str = "..\\csv-db\\target\\debug\\csvdb.exe";
+
 fn main() -> Result<(), Box<dyn Error>> {
 
     ratatui::run(app)?;
@@ -127,7 +129,7 @@ fn read_key_input() -> std::io::Result<KeyCode> {
 }
 fn run_other_app_get_list() -> Result<Vec<String>, Box<dyn Error>> {
 
-    let result = Command::new("..\\activities\\target\\debug\\activities.exe")
+    let result = Command::new(PATH_TO_CLI_APP)
         .args(["read", "all"])
         .output()?;
 
