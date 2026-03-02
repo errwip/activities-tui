@@ -107,7 +107,7 @@ fn widget(frame: &mut Frame, app_state: &mut AppState) {
     let inner_block_right = block_left.inner(right);
 
     // Rendering the welcome message in the header container:
-    frame.render_widget("== Hello from the APP! ==", header);
+    frame.render_widget("== Hello from the APP!! ==", header);
 
     // Render Left Block with List inside:
     frame.render_widget(block_left, left);
