@@ -169,7 +169,7 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
 
     let mut s = "Hello, World!";
     if aps.items.len() > 0 {
-        s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
+        // s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
     }
     let text = format!("Selected line's Comment:\n{s}\n{:?}", aps.list_state.selected());
 
