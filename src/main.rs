@@ -179,16 +179,18 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
 #[allow(non_snake_case)]
 fn InputBlock(aps: &'_ AppState) -> Paragraph<'_> {
 
+    let block = Block::bordered()
+        .title(" Input ")
+        .bold()
+        .border_type(BorderType::Thick)
+        .padding(Padding::new(1, 1, 0, 0));
+
     Paragraph::new(aps.user_input.as_str())
         .style(Style::default()
             .bg(Color::Gray)
             .fg(Color::Blue)
             .not_bold())
-        .block(Block::bordered()
-            .title(" Input ")
-            .bold()
-            .border_type(BorderType::Thick)
-            .padding(Padding::new(1, 1, 0, 0)))
+        .block(block)
 }
 /*
     ************************
