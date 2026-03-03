@@ -84,9 +84,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // Define the right BLOCK and the inner PARAGRAPH
     let block_right = RightBlock();
-
-    let s = app_state.items.iter().skip(app_state.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
-    let text = Paragraph::new(format!("Selected line's Comment:\n\n{s}"));
+    let text_right = RightBlockParagraph(&app_state);
 
     // Now we define the inner AREA of BLOCKS
     let inner_block_left = block_left.inner(left);
@@ -101,7 +99,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // Render Right Block with Text inside:
     frame.render_widget(block_right, right);
-    frame.render_widget(text,inner_block_right);
+    frame.render_widget(text_right, inner_block_right);
 }
 /*
     ******************
@@ -143,6 +141,11 @@ fn LeftBlockList<'a>(items: Vec<String>) -> List<'a> {
                 .bg(Color::Gray)
                 .fg(Color::Blue)
         )
+}
+#[allow(non_snake_case)]
+fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
+    let s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
+    Paragraph::new(format!("Selected line's Comment:\n\n{s}"))
 }
 /*
     ************************
