@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::process::Command;
+use std::process::{Command};
 use ratatui::{Frame};
 use crossterm::event;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
@@ -35,6 +35,47 @@ impl AppState {
             self.list_state.select(Some(current - 1));
         }
     }
+    fn parse_input(&mut self) {
+        if self.user_input.is_empty() {
+            return;
+        }
+        if !self.user_input.starts_with(":") {
+            return;
+        }
+
+        self.user_input.remove(0);
+        let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
+
+        if slice[0] == "exit" {
+            self.quit_app = true;
+            return;
+        }
+        if slice[0] == "test" {
+            self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
+            self.user_input = ":".to_string();
+            return;
+        }
+        if slice[0] == "add" {
+            // self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
+            self.user_input = ":".to_string();
+            return;
+        }
+        if slice[0] == "read" {
+            self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list");
+            self.user_input = ":".to_string();
+            return;
+        }
+        if slice[0] == "remove" {
+            // self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
+            self.user_input = ":".to_string();
+            return;
+        }
+        if slice[0] == "reindex" {
+            // self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
+            self.user_input = ":".to_string();
+            return;
+        }
+    }
 }
 fn main() -> Result<(), Box<dyn Error>> {
 
@@ -49,8 +90,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(KeyCode::Esc) => app_state.quit_app = true,
             Ok(KeyCode::Up) => app_state.up(),
             Ok(KeyCode::Down) => app_state.down(),
-            Ok(KeyCode::Char(input)) => app_state.user_input.push(input),
+            Ok(KeyCode::Char(input)) => { app_state.user_input.push(input); },
             Ok(KeyCode::Backspace) => { app_state.user_input.pop(); },
+            Ok(KeyCode::Enter) => app_state.parse_input(),
             Err(e) => {
                 ratatui::restore();
                 return Err(Box::new(e));
@@ -74,10 +116,8 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // This is the entire window / view of the terminal
     let area = frame.area();
-
     // Splitting the terminal into a top header, main container, and footer at the bottom
-    let [header, main, footer] = Layout::vertical([Length(1), Fill(0), Length(3)]).areas(area);
-
+    let [header, main, footer] = Layout::vertical([Length(2), Fill(0), Length(3)]).areas(area);
     // Splitting the main part of area into left and right side
     let [left, right] = Layout::horizontal([Fill(1), Fill(2)]).areas(main);
 
@@ -85,7 +125,6 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // This is List for `left` area, encapsulated in a Block.
     let left_area_list = LeftBlockList(app_state.items.clone());
-
     // This is Paragraph for `right` area, encapsulated in a Block.
     let right_area_text = RightBlockParagraph(&app_state);
 
@@ -93,13 +132,10 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // Rendering the welcome message on the Header Area:
     frame.render_widget("= App Header = Hello, World!", header);
-
     // Render List inside a Block on the Left Area:
     frame.render_stateful_widget(left_area_list, left, &mut app_state.list_state);
-
     // Render Paragraph inside a Block on the Right Area:
     frame.render_widget(right_area_text, right);
-
     // Render Input field on the Footer Area:
     frame.render_widget(InputBlock(&app_state), footer);
 }
@@ -146,6 +182,7 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
 
     let s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
     let text = format!("Selected line's Comment:\n{s}");
+
     Paragraph::new(text)
         .block(block)
 }
@@ -153,8 +190,15 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
 fn InputBlock(aps: &'_ AppState) -> Paragraph<'_> {
 
     Paragraph::new(aps.user_input.as_str())
-        .style(Style::default())
-        .block(Block::bordered().title("Input"))
+        .style(Style::default()
+            .bg(Color::Gray)
+            .fg(Color::Blue)
+            .not_bold())
+        .block(Block::bordered()
+            .title(" Input ")
+            .bold()
+            .border_type(BorderType::Thick)
+            .padding(Padding::new(1, 1, 0, 0)))
 }
 /*
     ************************
