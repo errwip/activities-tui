@@ -1,6 +1,6 @@
 use std::error::Error;
 use std::process::Command;
-use ratatui::{DefaultTerminal, Frame};
+use ratatui::{Frame};
 use crossterm::event;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
 use ratatui::layout::Constraint::{Fill, Length};
