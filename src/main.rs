@@ -3,11 +3,12 @@ use std::process::Command;
 use ratatui::{Frame};
 use crossterm::event;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
+use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint::{Fill, Length};
-use ratatui::layout::Layout;
+use ratatui::layout::{Layout, Rect};
 use ratatui::prelude::{Color, Stylize};
 use ratatui::style::Style;
-use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph};
+use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph, Widget};
 
 const PATH_TO_CLI_APP: &str = "..\\csv-db\\target\\debug\\csvdb.exe";
 
@@ -66,7 +67,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     ratatui::restore();
     Ok(())
-
 }
 fn window(frame: &mut Frame, app_state: &mut AppState) {
 
@@ -80,55 +80,94 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     let [left, right] = Layout::horizontal([Fill(1), Fill(2)]).areas(main);
 
     // Defining the left BLOCK and the inner LIST
-    let block_left = Block::default()
-        .title(" Activities List! ")
-        .style(Style::new()
-            .gray()
-            .on_blue()
-            .bold())
-        .borders(Borders::ALL)
-        .border_type(BorderType::Double)
-        .padding(Padding::new(4, 4, 1, 1));
-
-    let list = List::default()
-        .items(app_state.items.clone())
-        .not_bold()
-        // .highlight_symbol("> ")
-        .highlight_style(
-            Style::default()
-                .bg(Color::Gray)
-                .fg(Color::Blue)
-        );
+    let block_left = LeftBlock::new();
+    let list_left = ListWrapper::new(app_state.items.clone());
 
     // Define the right BLOCK and the inner PARAGRAPH
-    let block_right = Block::default()
-        .title(" Right Side Block! ")
-        .style(Style::new()
-            .gray()
-            .on_blue()
-            .bold())
-        .borders(Borders::ALL)
-        .border_type(BorderType::Double)
-        .padding(Padding::new(4, 4, 1, 1));
+    let block_right = RightBlock::new();
 
     let s = app_state.items.iter().skip(app_state.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
     let text = Paragraph::new(format!("Selected line's Comment:\n\n{s}"));
 
     // Now we define the inner AREA of BLOCKS
-    let inner_block_left = block_left.inner(left);
-    let inner_block_right = block_left.inner(right);
+    let inner_block_left = block_left.block.inner(left);
+    let inner_block_right = block_left.block.inner(right);
 
     // Rendering the welcome message in the header container:
     frame.render_widget("== Hello from the APP!! ==", header);
 
     // Render Left Block with List inside:
-    frame.render_widget(block_left, left);
-    frame.render_stateful_widget(list, inner_block_left, &mut app_state.list_state);
+    frame.render_widget(block_left.block, left);
+    frame.render_stateful_widget(list_left.list, inner_block_left, &mut app_state.list_state);
 
     // Render Right Block with Text inside:
-    frame.render_widget(block_right, right);
+    frame.render_widget(block_right.block, right);
     frame.render_widget(text,inner_block_right);
 }
+/*
+    ******************
+    *** MY WIDGETS ***
+    ******************
+*/
+struct LeftBlock<'a> {
+    block: Block<'a>,
+}
+impl<'a> LeftBlock<'a> {
+    fn new() -> LeftBlock<'a> {
+        let block = Block::default()
+            .title(" Activities List! ")
+            .style(Style::new()
+                .gray()
+                .on_blue()
+                .bold())
+            .borders(Borders::ALL)
+            .border_type(BorderType::Double)
+            .padding(Padding::new(4, 4, 1, 1));
+
+        LeftBlock { block }
+    }
+}
+struct RightBlock<'a> {
+    block: Block<'a>,
+}
+impl<'a> RightBlock<'a> {
+    fn new() -> RightBlock<'a> {
+        let block = Block::default()
+            .title(" Right Side Block! ")
+            .style(Style::new()
+                .gray()
+                .on_blue()
+                .bold())
+            .borders(Borders::ALL)
+            .border_type(BorderType::Double)
+            .padding(Padding::new(4, 4, 1, 1));
+
+        RightBlock { block }
+    }
+}
+struct ListWrapper<'a> {
+    list: List<'a>,
+}
+impl<'a> ListWrapper<'a> {
+    fn new(items: Vec<String>) -> ListWrapper<'a> {
+        let list = List::default()
+            .items(items)
+            .not_bold()
+            // .highlight_symbol("> ")
+            .highlight_style(
+                Style::default()
+                    .bg(Color::Gray)
+                    .fg(Color::Blue)
+            );
+
+        ListWrapper { list }
+    }
+}
+/*
+    ************************
+    *** Helper Functions ***
+    ************************
+*/
 fn read_key_input() -> std::io::Result<KeyCode> {
     if let Event::Key(event) = event::read()? {
         if event.kind == KeyEventKind::Release {
