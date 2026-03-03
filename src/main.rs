@@ -56,7 +56,6 @@ impl AppState {
             _ => {},
         };
         self.user_input = ":".to_string();
-        
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
@@ -162,7 +161,10 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
         .border_type(BorderType::Double)
         .padding(Padding::new(4, 4, 1, 1));
 
-    let s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
+    let mut s = "Hello, World!";
+    if aps.items.len() > 0 {
+        s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
+    }
     let text = format!("Selected line's Comment:\n{s}");
 
     Paragraph::new(text)
