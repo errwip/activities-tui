@@ -69,13 +69,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 fn window(frame: &mut Frame, app_state: &mut AppState) {
 
-    // This is the entire window of the terminal?
+    // This is the entire window / view of the terminal
     let area = frame.area();
 
-    // Splitting the terminal into a top header and a main container below it:
+    // Splitting the terminal into a top header and a main container below
     let [header, main] = Layout::vertical([Length(3), Fill(0)]).areas(area);
 
-    // Splitting the terminal into left side and right side of the main container:
+    // Splitting the main part of area into left and right side
+    // Now we have Header up top and Left Right parts bellow it 
     let [left, right] = Layout::horizontal([Fill(1), Fill(2)]).areas(main);
 
     // Defining the left BLOCK and the inner LIST
@@ -172,10 +173,6 @@ fn run_other_app_get_list(args: &[&str]) -> Result<Vec<String>, Box<dyn Error>> 
         .map(String::from)
         .collect::<Vec<_>>())
 }
-
-
-
-
 
 
 
