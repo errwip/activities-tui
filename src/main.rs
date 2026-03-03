@@ -73,7 +73,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     let area = frame.area();
 
     // Splitting the terminal into a top header and a main container below
-    let [header, main] = Layout::vertical([Length(4), Fill(0)]).areas(area);
+    let [header, main, footer] = Layout::vertical([Length(1), Fill(0), Length(3)]).areas(area);
 
     // Splitting the main part of area into left and right side
     // Now we have Header up top and Left Right parts bellow it
@@ -92,7 +92,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     // let inner_block_right = block_left.inner(right);
 
     // Rendering the welcome message in the header container:
-    // frame.render_widget(InputBlock(), header);
+    frame.render_widget("= App Header = Hello, World!", header);
 
     // Render Left Block with List inside:
     // frame.render_widget(block_left, left);
@@ -101,6 +101,8 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     // Render Right Block with Text inside:
     frame.render_widget(right_area_text, right);
     // frame.render_widget(text_right, inner_block_right);
+    
+    frame.render_widget(InputBlock(), footer);
 }
 /*
     ******************
@@ -147,6 +149,16 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
     let text = format!("Selected line's Comment:\n{s}");
     Paragraph::new(text)
         .block(block)
+}
+#[allow(non_snake_case)]
+fn InputBlock<'a>() -> Paragraph<'a> {
+    let input: String ="Type Something!: ".to_string();
+    let mut character_index: usize;
+    let mut messages: Vec<String>;
+
+    Paragraph::new(input.clone())
+        .style(Style::default().fg(Color::Yellow))
+        .block(Block::bordered().title("Input"))
 }
 /*
     ************************
