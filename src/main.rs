@@ -68,40 +68,37 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 fn window(frame: &mut Frame, app_state: &mut AppState) {
+    // ******* LAYOUT *******
 
     // This is the entire window / view of the terminal
     let area = frame.area();
 
-    // Splitting the terminal into a top header and a main container below
+    // Splitting the terminal into a top header, main container, and footer at the bottom
     let [header, main, footer] = Layout::vertical([Length(1), Fill(0), Length(3)]).areas(area);
 
     // Splitting the main part of area into left and right side
-    // Now we have Header up top and Left Right parts bellow it
     let [left, right] = Layout::horizontal([Fill(1), Fill(2)]).areas(main);
 
-    // Defining the left BLOCK and the inner LIST
-    // let block_left = LeftBlock();
+    // ******* WIDGETS *******
+
+    // This is List for `left` area, encapsulated in a Block.
     let left_area_list = LeftBlockList(app_state.items.clone());
 
-    // Define the right BLOCK and the inner PARAGRAPH
+    // This is Paragraph for `right` area, encapsulated in a Block.
     let right_area_text = RightBlockParagraph(&app_state);
-    // let text_right = RightBlockParagraph(&app_state);
 
-    // Now we define the inner AREA of BLOCKS
-    // let inner_block_left = block_left.inner(left);
-    // let inner_block_right = block_left.inner(right);
+    // ******* RENDERING *******
 
-    // Rendering the welcome message in the header container:
+    // Rendering the welcome message on the Header Area:
     frame.render_widget("= App Header = Hello, World!", header);
 
-    // Render Left Block with List inside:
-    // frame.render_widget(block_left, left);
+    // Render List inside a Block on the Left Area:
     frame.render_stateful_widget(left_area_list, left, &mut app_state.list_state);
 
-    // Render Right Block with Text inside:
+    // Render Paragraph inside a Block on the Right Area:
     frame.render_widget(right_area_text, right);
-    // frame.render_widget(text_right, inner_block_right);
-    
+
+    // Render Input field on the Footer Area:
     frame.render_widget(InputBlock(), footer);
 }
 /*
