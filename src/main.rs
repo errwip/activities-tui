@@ -24,12 +24,18 @@ impl AppState {
         AppState { quit_app: false, items, list_state: ListState::default(), user_input: String::new() }
     }
     fn down(&mut self) {
+        if self.items.len() == 0 {
+            return;
+        }
         let current = self.list_state.selected().unwrap();
         if current < self.items.len() - 1 {
             self.list_state.select(Some(current + 1));
         }
     }
     fn up(&mut self) {
+        if self.items.len() == 0 {
+            return;
+        }
         let current = self.list_state.selected().unwrap();
         if current > 0 {
             self.list_state.select(Some(current - 1));
@@ -48,7 +54,7 @@ impl AppState {
 
         match slice[0]  {
             "exit" => self.quit_app = true,
-            "test" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            "test" => self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
             // "add"  => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
             "read" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
             // "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
@@ -165,7 +171,7 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
     if aps.items.len() > 0 {
         s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
     }
-    let text = format!("Selected line's Comment:\n{s}");
+    let text = format!("Selected line's Comment:\n{s}\n{:?}", aps.list_state.selected());
 
     Paragraph::new(text)
         .block(block)
