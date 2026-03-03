@@ -46,35 +46,17 @@ impl AppState {
         self.user_input.remove(0);
         let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
 
-        if slice[0] == "exit" {
-            self.quit_app = true;
-            return;
-        }
-        if slice[0] == "test" {
-            self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
-            self.user_input = ":".to_string();
-            return;
-        }
-        if slice[0] == "add" {
-            // self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
-            self.user_input = ":".to_string();
-            return;
-        }
-        if slice[0] == "read" {
-            self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list");
-            self.user_input = ":".to_string();
-            return;
-        }
-        if slice[0] == "remove" {
-            // self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
-            self.user_input = ":".to_string();
-            return;
-        }
-        if slice[0] == "reindex" {
-            // self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
-            self.user_input = ":".to_string();
-            return;
-        }
+        match slice[0]  {
+            "exit" => self.quit_app = true,
+            "test" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            // "add"  => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            "read" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            // "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            _ => {},
+        };
+        self.user_input = ":".to_string();
+        
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
