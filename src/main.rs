@@ -18,7 +18,7 @@ struct AppState {
 }
 impl AppState {
     fn new() -> AppState {
-        let items = run_other_app_get_list().expect("failed to run other_app_get_list");
+        let items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
 
         AppState { quit_app: false, items, list_state: ListState::default() }
     }
@@ -160,10 +160,10 @@ fn read_key_input() -> std::io::Result<KeyCode> {
     }
     Ok(KeyCode::Null)
 }
-fn run_other_app_get_list() -> Result<Vec<String>, Box<dyn Error>> {
-
+fn run_other_app_get_list(args: &[&str]) -> Result<Vec<String>, Box<dyn Error>> {
+    
     let result = Command::new(PATH_TO_CLI_APP)
-        .args(["read", "all"])
+        .args(args)
         .output()?;
 
     Ok(String::from_utf8(result.stdout)?
