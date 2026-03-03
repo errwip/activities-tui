@@ -3,12 +3,11 @@ use std::process::Command;
 use ratatui::{Frame};
 use crossterm::event;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
-use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint::{Fill, Length};
-use ratatui::layout::{Layout, Rect};
+use ratatui::layout::{Layout};
 use ratatui::prelude::{Color, Stylize};
 use ratatui::style::Style;
-use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph, Widget};
+use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph};
 
 const PATH_TO_CLI_APP: &str = "..\\csv-db\\target\\debug\\csvdb.exe";
 
