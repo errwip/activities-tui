@@ -11,11 +11,6 @@ use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Par
 
 const PATH_TO_CLI_APP: &str = "..\\csv-db\\target\\debug\\csvdb.exe";
 
-fn main() -> Result<(), Box<dyn Error>> {
-
-    ratatui::run(app)?;
-    Ok(())
-}
 struct AppState {
     quit_app: bool,
     items: Vec<String>,
@@ -40,6 +35,11 @@ impl AppState {
         }
     }
 }
+fn main() -> Result<(), Box<dyn Error>> {
+
+    ratatui::run(app)?;
+    Ok(())
+}
 
 fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
 
@@ -60,14 +60,15 @@ fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
     Ok(())
 }
 fn widget(frame: &mut Frame, app_state: &mut AppState) {
+
     // This is the entire window of the terminal?
     let area = frame.area();
 
     // Splitting the terminal into a top header and a main container below it:
-    let [header, main] = Layout::vertical([Length(1), Fill(0)]).areas(area);
+    let [header, main] = Layout::vertical([Length(3), Fill(0)]).areas(area);
 
     // Splitting the terminal into left side and right side of the main container:
-    let [left, right] = Layout::horizontal([Fill(1), Fill(1)]).areas(main);
+    let [left, right] = Layout::horizontal([Fill(1), Fill(2)]).areas(main);
 
     // Defining the left BLOCK and the inner LIST
     let block_left = Block::default()
