@@ -27,19 +27,19 @@ impl AppState {
         if self.items.len() == 0 {
             return;
         }
-        let current = self.list_state.selected().unwrap();
-        if current < self.items.len() - 1 {
-            self.list_state.select(Some(current + 1));
-        }
+        // self.list_state.select_next();
+        let next = self.list_state.selected().map_or(0, |i| i+1);
+        self.list_state.select(Some(next.min(self.items.len()-1)));
     }
     fn up(&mut self) {
         if self.items.len() == 0 {
             return;
         }
-        let current = self.list_state.selected().unwrap();
-        if current > 0 {
-            self.list_state.select(Some(current - 1));
-        }
+        self.list_state.select_previous();
+        // let current = self.list_state.selected().unwrap();
+        // if current > 0 {
+        //     self.list_state.select(Some(current - 1));
+        // }
     }
     fn parse_input(&mut self) {
         if self.user_input.is_empty() {
