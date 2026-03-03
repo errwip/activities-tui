@@ -81,11 +81,11 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // Defining the left BLOCK and the inner LIST
     // let block_left = LeftBlock();
-    let list_left = LeftBlockList(app_state.items.clone());
+    let left_area_list = LeftBlockList(app_state.items.clone());
 
     // Define the right BLOCK and the inner PARAGRAPH
-    let block_right = RightBlock();
-    let text_right = RightBlockParagraph(&app_state);
+    let right_area_text = RightBlockParagraph(&app_state);
+    // let text_right = RightBlockParagraph(&app_state);
 
     // Now we define the inner AREA of BLOCKS
     // let inner_block_left = block_left.inner(left);
@@ -96,10 +96,10 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // Render Left Block with List inside:
     // frame.render_widget(block_left, left);
-    frame.render_stateful_widget(list_left, left, &mut app_state.list_state);
+    frame.render_stateful_widget(left_area_list, left, &mut app_state.list_state);
 
     // Render Right Block with Text inside:
-    frame.render_widget(block_right, right);
+    frame.render_widget(right_area_text, right);
     // frame.render_widget(text_right, inner_block_right);
 }
 /*
@@ -108,19 +108,8 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     ******************
 */
 #[allow(non_snake_case)]
-fn RightBlock<'a>() -> Block<'a> {
-    Block::default()
-        .title(" Right Side Block! ")
-        .style(Style::new()
-            .gray()
-            .on_blue()
-            .bold())
-        .borders(Borders::ALL)
-        .border_type(BorderType::Double)
-        .padding(Padding::new(4, 4, 1, 1))
-}
-#[allow(non_snake_case)]
 fn LeftBlockList<'a>(items: Vec<String>) -> List<'a> {
+
     let block = Block::default()
         .title(" Activities List! ")
         .style(Style::new()
@@ -143,8 +132,21 @@ fn LeftBlockList<'a>(items: Vec<String>) -> List<'a> {
 }
 #[allow(non_snake_case)]
 fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
+
+    let block = Block::default()
+        .title(" Right Side Block! ")
+        .style(Style::new()
+            .gray()
+            .on_blue()
+            .bold())
+        .borders(Borders::ALL)
+        .border_type(BorderType::Double)
+        .padding(Padding::new(4, 4, 1, 1));
+
     let s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
-    Paragraph::new(format!("Selected line's Comment:\n\n{s}"))
+    let text = format!("Selected line's Comment:\n{s}");
+    Paragraph::new(text)
+        .block(block)
 }
 /*
     ************************
