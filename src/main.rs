@@ -150,8 +150,8 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
 #[allow(non_snake_case)]
 fn InputBlock<'a>() -> Paragraph<'a> {
     let input: String ="Type Something!: ".to_string();
-    let mut character_index: usize;
-    let mut messages: Vec<String>;
+    // let mut character_index: usize;
+    // let mut messages: Vec<String>;
 
     Paragraph::new(input.clone())
         .style(Style::default().fg(Color::Yellow))
