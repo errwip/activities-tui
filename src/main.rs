@@ -15,12 +15,13 @@ struct AppState {
     quit_app: bool,
     items: Vec<String>,
     list_state: ListState,
+    user_input: String,
 }
 impl AppState {
     fn new() -> AppState {
         let items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
 
-        AppState { quit_app: false, items, list_state: ListState::default() }
+        AppState { quit_app: false, items, list_state: ListState::default(), user_input: String::new() }
     }
     fn down(&mut self) {
         let current = self.list_state.selected().unwrap();
@@ -48,6 +49,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(KeyCode::Esc) => app_state.quit_app = true,
             Ok(KeyCode::Up) => app_state.up(),
             Ok(KeyCode::Down) => app_state.down(),
+            Ok(KeyCode::Char(input)) => app_state.user_input.push(input),
+            Ok(KeyCode::Backspace) => { app_state.user_input.pop(); },
             Err(e) => {
                 ratatui::restore();
                 return Err(Box::new(e));
@@ -63,7 +66,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => { }
         };
     };
-
     ratatui::restore();
     Ok(())
 }
@@ -99,7 +101,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     frame.render_widget(right_area_text, right);
 
     // Render Input field on the Footer Area:
-    frame.render_widget(InputBlock(), footer);
+    frame.render_widget(InputBlock(&app_state), footer);
 }
 /*
     ******************
@@ -148,13 +150,10 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
         .block(block)
 }
 #[allow(non_snake_case)]
-fn InputBlock<'a>() -> Paragraph<'a> {
-    let input: String ="Type Something!: ".to_string();
-    // let mut character_index: usize;
-    // let mut messages: Vec<String>;
+fn InputBlock(aps: &'_ AppState) -> Paragraph<'_> {
 
-    Paragraph::new(input.clone())
-        .style(Style::default().fg(Color::Yellow))
+    Paragraph::new(aps.user_input.as_str())
+        .style(Style::default())
         .block(Block::bordered().title("Input"))
 }
 /*
