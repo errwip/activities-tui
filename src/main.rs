@@ -30,9 +30,9 @@ impl AppState {
     }
     fn up(&mut self) {
         let current = self.list_state.selected().unwrap();
-        // if current > 0 {
+        if current > 0 {
             self.list_state.select(Some(current - 1));
-        // }
+        }
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
@@ -55,7 +55,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => ()
         };
 
-        match terminal.draw(|f| widget(f, &mut app_state)) {
+        match terminal.draw(|f| window(f, &mut app_state)) {
             Err(e) => {
                 ratatui::restore();
                 return Err(Box::new(e));
@@ -68,7 +68,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 
 }
-fn widget(frame: &mut Frame, app_state: &mut AppState) {
+fn window(frame: &mut Frame, app_state: &mut AppState) {
 
     // This is the entire window of the terminal?
     let area = frame.area();
