@@ -30,34 +30,43 @@ impl AppState {
     }
     fn up(&mut self) {
         let current = self.list_state.selected().unwrap();
-        if current > 0 {
+        // if current > 0 {
             self.list_state.select(Some(current - 1));
-        }
+        // }
     }
 }
 fn main() -> Result<(), Box<dyn Error>> {
 
-    ratatui::run(app)?;
-    Ok(())
-}
-
-fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
-
     let mut app_state = AppState::new();
     app_state.list_state.select(Some(0));
 
+    let mut terminal = ratatui::init();
+
     while !app_state.quit_app {
 
-        match read_key_input()? {
-            KeyCode::Esc => app_state.quit_app = true,
-            KeyCode::Up => app_state.up(),
-            KeyCode::Down => app_state.down(),
+        match read_key_input() {
+            Ok(KeyCode::Esc) => app_state.quit_app = true,
+            Ok(KeyCode::Up) => app_state.up(),
+            Ok(KeyCode::Down) => app_state.down(),
+            Err(e) => {
+                ratatui::restore();
+                return Err(Box::new(e));
+            },
             _ => ()
-        }
+        };
 
-        terminal.draw(|f| widget(f, &mut app_state))?;
-    }
+        match terminal.draw(|f| widget(f, &mut app_state)) {
+            Err(e) => {
+                ratatui::restore();
+                return Err(Box::new(e));
+            }
+            _ => { }
+        };
+    };
+
+    ratatui::restore();
     Ok(())
+
 }
 fn widget(frame: &mut Frame, app_state: &mut AppState) {
 
