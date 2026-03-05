@@ -49,13 +49,20 @@ impl AppState {
 
         self.user_input.remove(0);
         let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
+        self.items = slice.iter().map(|s| s.to_string()).collect();
 
         match slice[0]  {
             "exit" => self.quit_app = true,
             "test" => self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
-            // "add"  => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
             "read" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            // "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            "add"  => {
+                let mut iter = slice.iter();
+                let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
+                let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
+                head.push(&tail);
+                self.items = run_other_app_get_list(&head).expect("failed to run other_app_get_list")
+            },
             // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
             _ => {},
         };
