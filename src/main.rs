@@ -27,7 +27,8 @@ impl AppState {
         if self.items.len() == 0 {
             return;
         }
-        // self.list_state.select_next();
+        // List does not properly constrains to last index
+        // instead it goes to `len()` instead of `len()-1`
         let next = self.list_state.selected().map_or(0, |i| i+1);
         self.list_state.select(Some(next.min(self.items.len()-1)));
     }
@@ -35,11 +36,8 @@ impl AppState {
         if self.items.len() == 0 {
             return;
         }
+        // properly constrains to index 0.
         self.list_state.select_previous();
-        // let current = self.list_state.selected().unwrap();
-        // if current > 0 {
-        //     self.list_state.select(Some(current - 1));
-        // }
     }
     fn parse_input(&mut self) {
         if self.user_input.is_empty() {
