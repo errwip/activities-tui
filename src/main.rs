@@ -180,7 +180,7 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
 fn InputBlock(aps: &'_ AppState) -> Paragraph<'_> {
 
     let block = Block::bordered()
-        .title(" Input ")
+        .title(" Command ")
         .bold()
         .border_type(BorderType::Thick)
         .padding(Padding::new(1, 1, 0, 0));
