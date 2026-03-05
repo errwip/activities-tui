@@ -165,9 +165,12 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
         .border_type(BorderType::Double)
         .padding(Padding::new(4, 4, 1, 1));
 
-    let mut s = "Hello, World!";
+    let mut s = "Default, Message...";
+
     if aps.items.len() > 0 {
-        // s = aps.items.iter().skip(aps.list_state.selected().unwrap()).next().unwrap().split(',').last().unwrap();
+        let index = aps.list_state.selected().unwrap_or(0);
+        let index = index.min(aps.items.len()-1);
+        s = aps.items.iter().skip(index).next().unwrap().split(',').last().unwrap();
     }
     let text = format!("Selected line's Comment:\n{s}\n{:?}", aps.list_state.selected());
 
