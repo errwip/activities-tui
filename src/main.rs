@@ -9,49 +9,6 @@ use ratatui::prelude::{Color, Stylize};
 use ratatui::style::Style;
 use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph};
 
-// struct AppState {
-//     quit_app: bool,
-//     items: Vec<String>,
-//     user_input: String,
-// }
-// impl AppState {
-//     fn new() -> AppState {
-//         let items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
-//
-//         AppState { quit_app: false, items, user_input: String::new() }
-//     }
-//
-//     }
-//     fn parse_input(&mut self) {
-//         if self.user_input.is_empty() {
-//             return;
-//         }
-//         if !self.user_input.starts_with(":") {
-//             return;
-//         }
-//
-//         self.user_input.remove(0);
-//         let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
-//         self.items = slice.iter().map(|s| s.to_string()).collect();
-//
-//         match slice[0]  {
-//             "exit" => self.quit_app = true,
-//             "test" => self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
-//             "read" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-//             "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-//             "add"  => {
-//                 let mut iter = slice.iter();
-//                 let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
-//                 let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
-//                 head.push(&tail);
-//                 self.items = run_other_app_get_list(&head).expect("failed to run other_app_get_list")
-//             },
-//             // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-//             _ => {},
-//         };
-//         self.user_input = ":".to_string();
-//     }
-// }
 fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
 
@@ -73,7 +30,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     ratatui::restore();
     Ok(())
 }
-// fn window(frame: &mut Frame, app_state: &mut AppState) {
 fn window(frame: &mut Frame, app: &mut App) {
 
     // ******* WIDGETS *******
@@ -145,8 +101,11 @@ impl App {
         }
         if self.command_block.focused {
             match code {
-                KeyCode::Char(input) => { self.command_block.text.push(input); },
-                KeyCode::Backspace => { self.command_block.text.pop(); },
+                KeyCode::Char(input) => { self.command_block.user_input.push(input); },
+                KeyCode::Backspace => { self.command_block.user_input.pop(); },
+                KeyCode::Enter => {
+                    self.left_block_list.items = self.command_block.execute_command(); 
+                },
                 _ => { }
             }
         }
@@ -222,13 +181,13 @@ impl RightBlockParagraph {
     }
 }
 struct CommandBlock {
-    text: String,
+    user_input: String,
     focused: bool,
 }
 impl CommandBlock {
     fn new() -> CommandBlock {
         let text = String::from(":lorem");
-        CommandBlock { text, focused: true }
+        CommandBlock { user_input: text, focused: true }
 
     }
     fn draw<'a>(&self) -> Paragraph<'a> {
@@ -239,12 +198,40 @@ impl CommandBlock {
             .border_type(BorderType::Thick)
             .padding(Padding::new(1, 1, 0, 0));
 
-        Paragraph::new(self.text.clone())
+        Paragraph::new(self.user_input.clone())
             .style(Style::default()
                 .bg(Color::Gray)
                 .fg(Color::Blue)
                 .not_bold())
             .block(block)
+    }
+    fn execute_command(&mut self) -> Vec<String> {
+        if self.user_input.is_empty() || !self.user_input.starts_with(":") {
+            return vec![];
+        }
+
+        self.user_input.remove(0);
+        let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
+        let mut items = slice.iter().map(|s| s.to_string()).collect();
+
+        match slice[0]  {
+            // "exit" => self.quit_app = true,
+            "test" => items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
+            "read" => items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            "remove" => items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            "add"  => {
+                let mut iter = slice.iter();
+                let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
+                let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
+                head.push(&tail);
+                items = run_other_app_get_list(&head).expect("failed to run other_app_get_list")
+            },
+            // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+            _ => {},
+        };
+        self.user_input = ":".to_string();
+        // eprintln!("{items:?}");
+        items
     }
 }
 /*
