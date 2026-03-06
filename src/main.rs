@@ -103,7 +103,7 @@ fn window(frame: &mut Frame, app: &mut App) {
     // Render List inside a Block on the Left Area:
     frame.render_stateful_widget(&left_area_list.draw(), left, &mut left_area_list.list_state);
     // Render Paragraph inside a Block on the Right Area:
-    frame.render_widget(&right_area_text.draw(), right);
+    frame.render_widget(&right_area_text.draw(&left_area_list), right);
     // Render Input field on the Footer Area:
     frame.render_widget(&command_block.draw(), footer);
 }
@@ -199,7 +199,7 @@ impl RightBlockParagraph {
     fn new() -> RightBlockParagraph {
         RightBlockParagraph {}
     }
-    fn draw<'a>(&self) -> Paragraph<'a> {
+    fn draw<'a>(&self, dependency: &LeftBlockList) -> Paragraph<'a> {
         let block = Block::default()
                 .title(" Right Side Block! ")
                 .style(Style::new()
@@ -210,12 +210,12 @@ impl RightBlockParagraph {
                 .border_type(BorderType::Double)
                 .padding(Padding::new(4, 4, 1, 1));
 
-            let s = "Default, Message...";
-            // if aps.items.len() > 0 {
-            //     let index = aps.list_state.selected().unwrap_or(0);
-            //     let index = index.min(aps.items.len()-1);
-            //     s = aps.items.iter().skip(index).next().unwrap().split(',').last().unwrap();
-            // }
+            let mut s = "Default, Message...";
+            if dependency.items.len() > 0 {
+                let index = dependency.list_state.selected().unwrap_or(0);
+                let index = index.min(dependency.items.len()-1);
+                s = dependency.items.iter().skip(index).next().unwrap().split(',').last().unwrap();
+            }
             let text = format!("Selected line's Comment:\n{s}");
 
         Paragraph::new(text).block(block)
