@@ -101,29 +101,29 @@ fn window(frame: &mut Frame, app: &mut App) {
     // Rendering the welcome message on the Header Area:
     frame.render_widget("= App Header = Hello, World!", header);
     // Render List inside a Block on the Left Area:
-    frame.render_stateful_widget(&left_area_list.widget, left, &mut left_area_list.list_state);
+    frame.render_stateful_widget(&left_area_list.draw(), left, &mut left_area_list.list_state);
     // Render Paragraph inside a Block on the Right Area:
-    frame.render_widget(&right_area_text.widget, right);
+    frame.render_widget(&right_area_text.draw(), right);
     // Render Input field on the Footer Area:
-    frame.render_widget(&command_block.widget, footer);
+    frame.render_widget(&command_block.draw(), footer);
 }
 /*
     ******************
     *** MY WIDGETS ***
     ******************
 */
-struct App<'a> {
+struct App {
     // *** State *** //
     quit: bool,
 
     // ** Widgets ** //
-    left_block_list: LeftBlockList<'a>,
-    right_block_paragraph: RightBlockParagraph<'a>,
-    command_block: CommandBlock<'a>,
+    left_block_list: LeftBlockList,
+    right_block_paragraph: RightBlockParagraph,
+    command_block: CommandBlock,
 
 }
-impl<'a> App<'a> {
-    fn new() -> App<'a> {
+impl App {
+    fn new() -> App {
         let left_block_items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
         App {
             quit: false,
@@ -143,15 +143,25 @@ impl<'a> App<'a> {
                 _ => { }
             }
         }
+        if self.command_block.focused {
+            match code {
+                KeyCode::Char(input) => { self.command_block.text.push(input); },
+                KeyCode::Backspace => { self.command_block.text.pop(); },
+                _ => { }
+            }
+        }
     }
 }
-struct LeftBlockList<'a> {
+struct LeftBlockList {
+    items: Vec<String>,
     list_state: ListState,
-    widget: List<'a>,
     focused: bool,
 }
-impl<'a> LeftBlockList<'a> {
-    fn new(items: Vec<String>) -> LeftBlockList<'a> {
+impl LeftBlockList {
+    fn new(items: Vec<String>) -> LeftBlockList {
+        LeftBlockList { items, list_state: ListState::default(), focused: true }
+    }
+    fn draw<'a>(&self) -> List<'a> {
         let block = Block::default()
             .title(" Activities List! ")
             .style(Style::new()
@@ -162,17 +172,15 @@ impl<'a> LeftBlockList<'a> {
             .border_type(BorderType::Double)
             .padding(Padding::new(4, 4, 1, 1));
 
-        let widget = List::default()
-            .items(items.clone())
+        List::default()
+            .items(self.items.clone())
             .not_bold()
             // .highlight_symbol("> ")
             .highlight_style(
                 Style::default()
                     .bg(Color::Gray)
                     .fg(Color::Blue))
-            .block(block);
-
-        LeftBlockList { widget, focused: true, list_state: ListState::default() }
+            .block(block)
     }
     fn down(&mut self) {
         // List does not properly constrains to last index
@@ -186,11 +194,12 @@ impl<'a> LeftBlockList<'a> {
         self.list_state.select_previous();
     }
 }
-struct RightBlockParagraph<'a> {
-    widget: Paragraph<'a>,
-}
-impl<'a> RightBlockParagraph<'a> {
-    fn new() -> RightBlockParagraph<'a> {
+struct RightBlockParagraph { }
+impl RightBlockParagraph {
+    fn new() -> RightBlockParagraph {
+        RightBlockParagraph {}
+    }
+    fn draw<'a>(&self) -> Paragraph<'a> {
         let block = Block::default()
                 .title(" Right Side Block! ")
                 .style(Style::new()
@@ -209,29 +218,33 @@ impl<'a> RightBlockParagraph<'a> {
             // }
             let text = format!("Selected line's Comment:\n{s}");
 
-        RightBlockParagraph { widget: Paragraph::new(text).block(block) }
+        Paragraph::new(text).block(block)
     }
 }
-struct CommandBlock<'a> {
-    widget: Paragraph<'a>,
+struct CommandBlock {
+    text: String,
     focused: bool,
 }
-impl<'a> CommandBlock<'a> {
-    fn new() -> CommandBlock<'a> {
+impl CommandBlock {
+    fn new() -> CommandBlock {
+        let text = String::from(":lorem");
+        CommandBlock { text, focused: true }
+
+    }
+    fn draw<'a>(&self) -> Paragraph<'a> {
+
         let block = Block::bordered()
             .title(" Command ")
             .bold()
             .border_type(BorderType::Thick)
             .padding(Padding::new(1, 1, 0, 0));
 
-        let widget = Paragraph::new(":lorem ipsum")
+        Paragraph::new(self.text.clone())
             .style(Style::default()
                 .bg(Color::Gray)
                 .fg(Color::Blue)
                 .not_bold())
-            .block(block);
-
-        CommandBlock { widget, focused: false }
+            .block(block)
     }
 }
 /*
