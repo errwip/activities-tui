@@ -127,7 +127,8 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     // Render Paragraph inside a Block on the Right Area:
     frame.render_widget(right_area_text, right);
     // Render Input field on the Footer Area:
-    frame.render_widget(InputBlock(&app_state), footer);
+    let input_field = CommandBlock::new(&app_state);
+    frame.render_widget(input_field.widget, footer);
 }
 /*
     ******************
@@ -141,7 +142,6 @@ struct LeftBlockList<'a> {
 }
 impl<'a> LeftBlockList<'a> {
     fn new(items: Vec<String>) -> LeftBlockList<'a> {
-
         let block = Block::default()
             .title(" Activities List! ")
             .style(Style::new()
@@ -167,7 +167,6 @@ impl<'a> LeftBlockList<'a> {
 }
 #[allow(non_snake_case)]
 fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
-
     let block = Block::default()
         .title(" Right Side Block! ")
         .style(Style::new()
@@ -189,21 +188,28 @@ fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
     Paragraph::new(text)
         .block(block)
 }
-#[allow(non_snake_case)]
-fn InputBlock(aps: &'_ AppState) -> Paragraph<'_> {
 
-    let block = Block::bordered()
-        .title(" Command ")
-        .bold()
-        .border_type(BorderType::Thick)
-        .padding(Padding::new(1, 1, 0, 0));
+struct CommandBlock<'a> {
+    widget: Paragraph<'a>,
+    focused: bool,
+}
+impl<'a> CommandBlock<'a> {
+    fn new(aps: &'a AppState) -> CommandBlock<'a> {
+        let block = Block::bordered()
+            .title(" Command ")
+            .bold()
+            .border_type(BorderType::Thick)
+            .padding(Padding::new(1, 1, 0, 0));
 
-    Paragraph::new(aps.user_input.as_str())
-        .style(Style::default()
-            .bg(Color::Gray)
-            .fg(Color::Blue)
-            .not_bold())
-        .block(block)
+        let widget = Paragraph::new(aps.user_input.as_str())
+            .style(Style::default()
+                .bg(Color::Gray)
+                .fg(Color::Blue)
+                .not_bold())
+            .block(block);
+        
+        CommandBlock { widget, focused: false }
+    }
 }
 /*
     ************************
