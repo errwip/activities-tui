@@ -53,26 +53,13 @@ use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Par
 //     }
 // }
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut quit_app = false;
     let mut app = App::new();
 
     let mut terminal = ratatui::init();
 
     while !app.quit {
 
-        match read_key_input() {
-            Ok(KeyCode::Esc) => app.quit = true,
-            Ok(KeyCode::Up) => app.left_block_list.up(),
-            Ok(KeyCode::Down) => app.left_block_list.down(),
-            // Ok(KeyCode::Char(input)) => { app_state.user_input.push(input); },
-            // Ok(KeyCode::Backspace) => { app_state.user_input.pop(); },
-            // Ok(KeyCode::Enter) => app_state.parse_input(),
-            // Err(e) => {
-            //     ratatui::restore();
-            //     return Err(Box::new(e));
-            // },
-            _ => ()
-        };
+        app.parse_input(read_key_input()?);
 
         // match terminal.draw(|f| window(f, &mut app_state)) {
         match terminal.draw(|f| window(f, &mut app)) {
@@ -143,6 +130,18 @@ impl<'a> App<'a> {
             left_block_list: LeftBlockList::new(left_block_items),
             right_block_paragraph: RightBlockParagraph::new(),
             command_block: CommandBlock::new(),
+        }
+    }
+    fn parse_input(&mut self, code: KeyCode) {
+        if code == KeyCode::Esc {
+            self.quit = true;
+        }
+        if self.left_block_list.focused {
+            match code {
+                KeyCode::Up => self.left_block_list.up(),
+                KeyCode::Down => self.left_block_list.down(),
+                _ => { }
+            }
         }
     }
 }
