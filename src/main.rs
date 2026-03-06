@@ -9,8 +9,6 @@ use ratatui::prelude::{Color, Stylize};
 use ratatui::style::Style;
 use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph};
 
-const PATH_TO_CLI_APP: &str = "..\\csv-db\\target\\debug\\csvdb.exe";
-
 struct AppState {
     quit_app: bool,
     items: Vec<String>,
@@ -116,7 +114,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     // ******* WIDGETS *******
 
     // This is List for `left` area, encapsulated in a Block.
-    let left_area_list = LeftBlockList(app_state.items.clone());
+    let left_area_list = LeftBlockList::new(app_state.items.clone());
     // This is Paragraph for `right` area, encapsulated in a Block.
     let right_area_text = RightBlockParagraph(&app_state);
 
@@ -125,7 +123,7 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     // Rendering the welcome message on the Header Area:
     frame.render_widget("= App Header = Hello, World!", header);
     // Render List inside a Block on the Left Area:
-    frame.render_stateful_widget(left_area_list, left, &mut app_state.list_state);
+    frame.render_stateful_widget(left_area_list.widget, left, &mut app_state.list_state);
     // Render Paragraph inside a Block on the Right Area:
     frame.render_widget(right_area_text, right);
     // Render Input field on the Footer Area:
@@ -136,28 +134,36 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     *** MY WIDGETS ***
     ******************
 */
-#[allow(non_snake_case)]
-fn LeftBlockList<'a>(items: Vec<String>) -> List<'a> {
+struct LeftBlockList<'a> {
+    items: Vec<String>,
+    widget: List<'a>,
+    focused: bool,
+}
+impl<'a> LeftBlockList<'a> {
+    fn new(items: Vec<String>) -> LeftBlockList<'a> {
 
-    let block = Block::default()
-        .title(" Activities List! ")
-        .style(Style::new()
-            .gray()
-            .on_blue()
-            .bold())
-        .borders(Borders::ALL)
-        .border_type(BorderType::Double)
-        .padding(Padding::new(4, 4, 1, 1));
+        let block = Block::default()
+            .title(" Activities List! ")
+            .style(Style::new()
+                .gray()
+                .on_blue()
+                .bold())
+            .borders(Borders::ALL)
+            .border_type(BorderType::Double)
+            .padding(Padding::new(4, 4, 1, 1));
 
-    List::default()
-        .items(items)
-        .not_bold()
-        // .highlight_symbol("> ")
-        .highlight_style(
-            Style::default()
-                .bg(Color::Gray)
-                .fg(Color::Blue))
-        .block(block)
+        let widget = List::default()
+            .items(items.clone())
+            .not_bold()
+            // .highlight_symbol("> ")
+            .highlight_style(
+                Style::default()
+                    .bg(Color::Gray)
+                    .fg(Color::Blue))
+            .block(block);
+
+        LeftBlockList { items, widget, focused: true  }
+    }
 }
 #[allow(non_snake_case)]
 fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
@@ -212,8 +218,8 @@ fn read_key_input() -> std::io::Result<KeyCode> {
     }
     Ok(KeyCode::Null)
 }
+const PATH_TO_CLI_APP: &str = "..\\csv-db\\target\\debug\\csvdb.exe";
 fn run_other_app_get_list(args: &[&str]) -> Result<Vec<String>, Box<dyn Error>> {
-
     let result = Command::new(PATH_TO_CLI_APP)
         .args(args)
         .output()?;
