@@ -20,21 +20,7 @@ use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Par
 //
 //         AppState { quit_app: false, items, user_input: String::new() }
 //     }
-//     fn down(&mut self) {
-//         if self.items.len() == 0 {
-//             return;
-//         }
-//         // List does not properly constrains to last index
-//         // instead it goes to `len()` instead of `len()-1`
-//         let next = self.list_state.selected().map_or(0, |i| i+1);
-//         self.list_state.select(Some(next.min(self.items.len()-1)));
-//     }
-//     fn up(&mut self) {
-//         if self.items.len() == 0 {
-//             return;
-//         }
-//         // properly constrains to index 0.
-//         // self.list_state.select_previous();
+//
 //     }
 //     fn parse_input(&mut self) {
 //         if self.user_input.is_empty() {
@@ -68,18 +54,16 @@ use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Par
 // }
 fn main() -> Result<(), Box<dyn Error>> {
     let mut quit_app = false;
-    // let mut app_state = AppState::new();
-    // app_state.list_state.select(Some(0));
     let mut app = App::new();
 
     let mut terminal = ratatui::init();
 
-    while !quit_app {
+    while !app.quit {
 
         match read_key_input() {
-            Ok(KeyCode::Esc) => quit_app = true,
-            // Ok(KeyCode::Up) => app_state.up(),
-            // Ok(KeyCode::Down) => app_state.down(),
+            Ok(KeyCode::Esc) => app.quit = true,
+            Ok(KeyCode::Up) => app.left_block_list.up(),
+            Ok(KeyCode::Down) => app.left_block_list.down(),
             // Ok(KeyCode::Char(input)) => { app_state.user_input.push(input); },
             // Ok(KeyCode::Backspace) => { app_state.user_input.pop(); },
             // Ok(KeyCode::Enter) => app_state.parse_input(),
@@ -142,6 +126,10 @@ fn window(frame: &mut Frame, app: &mut App) {
     ******************
 */
 struct App<'a> {
+    // *** State *** //
+    quit: bool,
+
+    // ** Widgets ** //
     left_block_list: LeftBlockList<'a>,
     right_block_paragraph: RightBlockParagraph<'a>,
     command_block: CommandBlock<'a>,
@@ -149,15 +137,16 @@ struct App<'a> {
 }
 impl<'a> App<'a> {
     fn new() -> App<'a> {
+        let left_block_items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
         App {
-            left_block_list: LeftBlockList::new(vec![]),
+            quit: false,
+            left_block_list: LeftBlockList::new(left_block_items),
             right_block_paragraph: RightBlockParagraph::new(),
             command_block: CommandBlock::new(),
         }
     }
 }
 struct LeftBlockList<'a> {
-    items: Vec<String>,
     list_state: ListState,
     widget: List<'a>,
     focused: bool,
@@ -184,10 +173,20 @@ impl<'a> LeftBlockList<'a> {
                     .fg(Color::Blue))
             .block(block);
 
-        LeftBlockList { items, widget, focused: true, list_state: ListState::default()  }
+        LeftBlockList { widget, focused: true, list_state: ListState::default() }
+    }
+    fn down(&mut self) {
+        // List does not properly constrains to last index
+        // instead it goes to `len()` instead of `len()-1`
+        let next = self.list_state.selected().map_or(0, |i| i + 1);
+        // self.list_state.select(Some(next.min(self.items.len()-1)));
+        self.list_state.select(Some(next));
+    }
+    fn up(&mut self) {
+        // properly constrains to index 0.
+        self.list_state.select_previous();
     }
 }
-// #[allow(non_snake_case)]
 struct RightBlockParagraph<'a> {
     widget: Paragraph<'a>,
 }
