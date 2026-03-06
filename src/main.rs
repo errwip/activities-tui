@@ -9,88 +9,89 @@ use ratatui::prelude::{Color, Stylize};
 use ratatui::style::Style;
 use ratatui::widgets::{Block, BorderType, Borders, List, ListState, Padding, Paragraph};
 
-struct AppState {
-    quit_app: bool,
-    items: Vec<String>,
-    list_state: ListState,
-    user_input: String,
-}
-impl AppState {
-    fn new() -> AppState {
-        let items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
-
-        AppState { quit_app: false, items, list_state: ListState::default(), user_input: String::new() }
-    }
-    fn down(&mut self) {
-        if self.items.len() == 0 {
-            return;
-        }
-        // List does not properly constrains to last index
-        // instead it goes to `len()` instead of `len()-1`
-        let next = self.list_state.selected().map_or(0, |i| i+1);
-        self.list_state.select(Some(next.min(self.items.len()-1)));
-    }
-    fn up(&mut self) {
-        if self.items.len() == 0 {
-            return;
-        }
-        // properly constrains to index 0.
-        self.list_state.select_previous();
-    }
-    fn parse_input(&mut self) {
-        if self.user_input.is_empty() {
-            return;
-        }
-        if !self.user_input.starts_with(":") {
-            return;
-        }
-
-        self.user_input.remove(0);
-        let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
-        self.items = slice.iter().map(|s| s.to_string()).collect();
-
-        match slice[0]  {
-            "exit" => self.quit_app = true,
-            "test" => self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
-            "read" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            "add"  => {
-                let mut iter = slice.iter();
-                let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
-                let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
-                head.push(&tail);
-                self.items = run_other_app_get_list(&head).expect("failed to run other_app_get_list")
-            },
-            // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            _ => {},
-        };
-        self.user_input = ":".to_string();
-    }
-}
+// struct AppState {
+//     quit_app: bool,
+//     items: Vec<String>,
+//     user_input: String,
+// }
+// impl AppState {
+//     fn new() -> AppState {
+//         let items = run_other_app_get_list(&["read", "all"]).expect("failed to run other_app_get_list");
+//
+//         AppState { quit_app: false, items, user_input: String::new() }
+//     }
+//     fn down(&mut self) {
+//         if self.items.len() == 0 {
+//             return;
+//         }
+//         // List does not properly constrains to last index
+//         // instead it goes to `len()` instead of `len()-1`
+//         let next = self.list_state.selected().map_or(0, |i| i+1);
+//         self.list_state.select(Some(next.min(self.items.len()-1)));
+//     }
+//     fn up(&mut self) {
+//         if self.items.len() == 0 {
+//             return;
+//         }
+//         // properly constrains to index 0.
+//         // self.list_state.select_previous();
+//     }
+//     fn parse_input(&mut self) {
+//         if self.user_input.is_empty() {
+//             return;
+//         }
+//         if !self.user_input.starts_with(":") {
+//             return;
+//         }
+//
+//         self.user_input.remove(0);
+//         let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
+//         self.items = slice.iter().map(|s| s.to_string()).collect();
+//
+//         match slice[0]  {
+//             "exit" => self.quit_app = true,
+//             "test" => self.items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
+//             "read" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+//             "remove" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+//             "add"  => {
+//                 let mut iter = slice.iter();
+//                 let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
+//                 let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
+//                 head.push(&tail);
+//                 self.items = run_other_app_get_list(&head).expect("failed to run other_app_get_list")
+//             },
+//             // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
+//             _ => {},
+//         };
+//         self.user_input = ":".to_string();
+//     }
+// }
 fn main() -> Result<(), Box<dyn Error>> {
-
-    let mut app_state = AppState::new();
-    app_state.list_state.select(Some(0));
+    let mut quit_app = false;
+    // let mut app_state = AppState::new();
+    // app_state.list_state.select(Some(0));
+    let mut app = App::new();
 
     let mut terminal = ratatui::init();
 
-    while !app_state.quit_app {
+    while !quit_app {
 
         match read_key_input() {
-            Ok(KeyCode::Esc) => app_state.quit_app = true,
-            Ok(KeyCode::Up) => app_state.up(),
-            Ok(KeyCode::Down) => app_state.down(),
-            Ok(KeyCode::Char(input)) => { app_state.user_input.push(input); },
-            Ok(KeyCode::Backspace) => { app_state.user_input.pop(); },
-            Ok(KeyCode::Enter) => app_state.parse_input(),
-            Err(e) => {
-                ratatui::restore();
-                return Err(Box::new(e));
-            },
+            Ok(KeyCode::Esc) => quit_app = true,
+            // Ok(KeyCode::Up) => app_state.up(),
+            // Ok(KeyCode::Down) => app_state.down(),
+            // Ok(KeyCode::Char(input)) => { app_state.user_input.push(input); },
+            // Ok(KeyCode::Backspace) => { app_state.user_input.pop(); },
+            // Ok(KeyCode::Enter) => app_state.parse_input(),
+            // Err(e) => {
+            //     ratatui::restore();
+            //     return Err(Box::new(e));
+            // },
             _ => ()
         };
 
-        match terminal.draw(|f| window(f, &mut app_state)) {
+        // match terminal.draw(|f| window(f, &mut app_state)) {
+        match terminal.draw(|f| window(f, &mut app)) {
             Err(e) => {
                 ratatui::restore();
                 return Err(Box::new(e));
@@ -101,7 +102,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     ratatui::restore();
     Ok(())
 }
-fn window(frame: &mut Frame, app_state: &mut AppState) {
+// fn window(frame: &mut Frame, app_state: &mut AppState) {
+fn window(frame: &mut Frame, app: &mut App) {
+
+    // ******* WIDGETS *******
+
+    // This is List for `left` area, encapsulated in a Block.
+    let left_area_list = &mut app.left_block_list;
+
+    // This is Paragraph for `right` area, encapsulated in a Block.
+    let right_area_text = &app.right_block_paragraph;
+
+    let command_block = &app.command_block;
+
+
     // ******* LAYOUT *******
 
     // This is the entire window / view of the terminal
@@ -111,32 +125,40 @@ fn window(frame: &mut Frame, app_state: &mut AppState) {
     // Splitting the main part of area into left and right side
     let [left, right] = Layout::horizontal([Fill(1), Fill(2)]).areas(main);
 
-    // ******* WIDGETS *******
-
-    // This is List for `left` area, encapsulated in a Block.
-    let left_area_list = LeftBlockList::new(app_state.items.clone());
-    // This is Paragraph for `right` area, encapsulated in a Block.
-    let right_area_text = RightBlockParagraph(&app_state);
-
     // ******* RENDERING *******
 
     // Rendering the welcome message on the Header Area:
     frame.render_widget("= App Header = Hello, World!", header);
     // Render List inside a Block on the Left Area:
-    frame.render_stateful_widget(left_area_list.widget, left, &mut app_state.list_state);
+    frame.render_stateful_widget(&left_area_list.widget, left, &mut left_area_list.list_state);
     // Render Paragraph inside a Block on the Right Area:
-    frame.render_widget(right_area_text, right);
+    frame.render_widget(&right_area_text.widget, right);
     // Render Input field on the Footer Area:
-    let input_field = CommandBlock::new(&app_state);
-    frame.render_widget(input_field.widget, footer);
+    frame.render_widget(&command_block.widget, footer);
 }
 /*
     ******************
     *** MY WIDGETS ***
     ******************
 */
+struct App<'a> {
+    left_block_list: LeftBlockList<'a>,
+    right_block_paragraph: RightBlockParagraph<'a>,
+    command_block: CommandBlock<'a>,
+
+}
+impl<'a> App<'a> {
+    fn new() -> App<'a> {
+        App {
+            left_block_list: LeftBlockList::new(vec![]),
+            right_block_paragraph: RightBlockParagraph::new(),
+            command_block: CommandBlock::new(),
+        }
+    }
+}
 struct LeftBlockList<'a> {
     items: Vec<String>,
+    list_state: ListState,
     widget: List<'a>,
     focused: bool,
 }
@@ -162,52 +184,55 @@ impl<'a> LeftBlockList<'a> {
                     .fg(Color::Blue))
             .block(block);
 
-        LeftBlockList { items, widget, focused: true  }
+        LeftBlockList { items, widget, focused: true, list_state: ListState::default()  }
     }
 }
-#[allow(non_snake_case)]
-fn RightBlockParagraph<'a>(aps: &AppState) -> Paragraph<'a> {
-    let block = Block::default()
-        .title(" Right Side Block! ")
-        .style(Style::new()
-            .gray()
-            .on_blue()
-            .bold())
-        .borders(Borders::ALL)
-        .border_type(BorderType::Double)
-        .padding(Padding::new(4, 4, 1, 1));
-
-    let mut s = "Default, Message...";
-    if aps.items.len() > 0 {
-        let index = aps.list_state.selected().unwrap_or(0);
-        let index = index.min(aps.items.len()-1);
-        s = aps.items.iter().skip(index).next().unwrap().split(',').last().unwrap();
-    }
-    let text = format!("Selected line's Comment:\n{s}");
-
-    Paragraph::new(text)
-        .block(block)
+// #[allow(non_snake_case)]
+struct RightBlockParagraph<'a> {
+    widget: Paragraph<'a>,
 }
+impl<'a> RightBlockParagraph<'a> {
+    fn new() -> RightBlockParagraph<'a> {
+        let block = Block::default()
+                .title(" Right Side Block! ")
+                .style(Style::new()
+                    .gray()
+                    .on_blue()
+                    .bold())
+                .borders(Borders::ALL)
+                .border_type(BorderType::Double)
+                .padding(Padding::new(4, 4, 1, 1));
 
+            let s = "Default, Message...";
+            // if aps.items.len() > 0 {
+            //     let index = aps.list_state.selected().unwrap_or(0);
+            //     let index = index.min(aps.items.len()-1);
+            //     s = aps.items.iter().skip(index).next().unwrap().split(',').last().unwrap();
+            // }
+            let text = format!("Selected line's Comment:\n{s}");
+
+        RightBlockParagraph { widget: Paragraph::new(text).block(block) }
+    }
+}
 struct CommandBlock<'a> {
     widget: Paragraph<'a>,
     focused: bool,
 }
 impl<'a> CommandBlock<'a> {
-    fn new(aps: &'a AppState) -> CommandBlock<'a> {
+    fn new() -> CommandBlock<'a> {
         let block = Block::bordered()
             .title(" Command ")
             .bold()
             .border_type(BorderType::Thick)
             .padding(Padding::new(1, 1, 0, 0));
 
-        let widget = Paragraph::new(aps.user_input.as_str())
+        let widget = Paragraph::new(":lorem ipsum")
             .style(Style::default()
                 .bg(Color::Gray)
                 .fg(Color::Blue)
                 .not_bold())
             .block(block);
-        
+
         CommandBlock { widget, focused: false }
     }
 }
