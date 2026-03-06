@@ -104,8 +104,20 @@ impl App {
                 KeyCode::Char(input) => { self.command_block.user_input.push(input); },
                 KeyCode::Backspace => { self.command_block.user_input.pop(); },
                 KeyCode::Enter => {
-                    self.left_block_list.items = self.command_block.execute_command(); 
-                },
+                    if self.command_block.user_input.starts_with(":") {
+                        self.command_block.user_input.remove(0);
+                        let slice = self.command_block.user_input.split_whitespace().collect::<Vec<&str>>();
+                        match slice[0] {
+                            "exit" => self.quit = true,
+                            "test" => CommandBlock::command_test(&slice, &mut self.left_block_list.items),
+                            "read" => CommandBlock::command_read(&slice, &mut self.left_block_list.items),
+                            "add" => CommandBlock::command_add(&slice),
+                            "remove" => CommandBlock::command_remove(&slice),
+                            "reindex" => CommandBlock::command_reindex(),
+                            _ => (),
+                        }
+                    }
+                }
                 _ => { }
             }
         }
@@ -182,12 +194,13 @@ impl RightBlockParagraph {
 }
 struct CommandBlock {
     user_input: String,
+    command_buffer: Vec<String>,
     focused: bool,
 }
 impl CommandBlock {
     fn new() -> CommandBlock {
         let text = String::from(":lorem");
-        CommandBlock { user_input: text, focused: true }
+        CommandBlock { user_input: text, focused: true, command_buffer: vec![] }
 
     }
     fn draw<'a>(&self) -> Paragraph<'a> {
@@ -205,35 +218,32 @@ impl CommandBlock {
                 .not_bold())
             .block(block)
     }
-    fn execute_command(&mut self) -> Vec<String> {
-        if self.user_input.is_empty() || !self.user_input.starts_with(":") {
-            return vec![];
-        }
-
-        self.user_input.remove(0);
-        let slice = self.user_input.split_whitespace().collect::<Vec<&str>>();
-        let mut items = slice.iter().map(|s| s.to_string()).collect();
-
-        match slice[0]  {
-            // "exit" => self.quit_app = true,
-            "test" => items = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>(),
-            "read" => items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            "remove" => items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            "add"  => {
-                let mut iter = slice.iter();
-                let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
-                let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
-                head.push(&tail);
-                items = run_other_app_get_list(&head).expect("failed to run other_app_get_list")
-            },
-            // "reindex" => self.items = run_other_app_get_list(&slice).expect("failed to run other_app_get_list"),
-            _ => {},
-        };
-        self.user_input = ":".to_string();
-        // eprintln!("{items:?}");
-        items
+    fn command_test(slice: &Vec<&str>, buffer: &mut Vec<String>) {
+        *buffer = slice[1..].iter().copied().map(String::from).collect::<Vec<String>>();
+    }
+    fn command_read(slice: &Vec<&str>, buffer: &mut Vec<String>) {
+        *buffer = run_other_app_get_list(&slice).expect("failed to run other_app_get_list");
+    }
+    fn command_add(slice: &Vec<&str>) {
+        let mut iter = slice.iter();
+        let mut head = iter.by_ref().take(3).map(|p| *p).collect::<Vec<_>>();
+        let tail = iter.map(|p| *p).collect::<Vec<_>>().join(" ");
+        head.push(&tail);
+        run_other_app_get_list(&head).expect("failed to run other_app_get_list");
+    }
+    fn command_remove(slice: &Vec<&str>) {
+        run_other_app_get_list(&slice).expect("failed to run other_app_get_list");
+    }
+    fn command_reindex() {
+        todo!("Implement Reindex - needs response to confirm reindexing")
     }
 }
+
+    //     self.user_input = ":".to_string();
+    //     // eprintln!("{items:?}");
+    //     items
+    // }
+
 /*
     ************************
     *** Helper Functions ***
