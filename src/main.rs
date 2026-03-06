@@ -107,17 +107,25 @@ impl App {
                     if self.command_block.user_input.starts_with(":") {
                         self.command_block.user_input.remove(0);
                         let slice = self.command_block.user_input.split_whitespace().collect::<Vec<&str>>();
-                        match slice[0] {
-                            "exit" => self.quit = true,
-                            "test" => CommandBlock::command_test(&slice, &mut self.left_block_list.items),
-                            "read" => CommandBlock::command_read(&slice, &mut self.left_block_list.items),
-                            "add" => CommandBlock::command_add(&slice),
-                            "remove" => CommandBlock::command_remove(&slice),
-                            "reindex" => CommandBlock::command_reindex(),
+                        match slice.first().copied() {
+                            Some("exit") => self.quit = true,
+                            Some("test") => CommandBlock::command_test(&slice, &mut self.left_block_list.items),
+                            Some("read") => CommandBlock::command_read(&slice, &mut self.left_block_list.items),
+                            Some("add") => CommandBlock::command_add(&slice),
+                            Some("remove") => CommandBlock::command_remove(&slice),
+                            Some("reindex") => CommandBlock::command_reindex(),
                             _ => (),
                         }
+                        let s = format!(":{}", slice.join(" "));
+                        if self.command_block.command_buffer.last() != Some(&s) {
+                            self.command_block.command_buffer.push(s);
+                        }
+                        self.command_block.buffer_index = self.command_block.command_buffer.len();
+                        self.command_block.user_input = ":".to_string();
                     }
                 }
+                KeyCode::PageUp => self.command_block.up(),
+                KeyCode::PageDown => self.command_block.down(),
                 _ => { }
             }
         }
@@ -195,12 +203,13 @@ impl RightBlockParagraph {
 struct CommandBlock {
     user_input: String,
     command_buffer: Vec<String>,
+    buffer_index: usize,
     focused: bool,
 }
 impl CommandBlock {
     fn new() -> CommandBlock {
         let text = String::from(":lorem");
-        CommandBlock { user_input: text, focused: true, command_buffer: vec![] }
+        CommandBlock { user_input: text, focused: true, command_buffer: vec![], buffer_index: 0 }
 
     }
     fn draw<'a>(&self) -> Paragraph<'a> {
@@ -235,15 +244,30 @@ impl CommandBlock {
         run_other_app_get_list(&slice).expect("failed to run other_app_get_list");
     }
     fn command_reindex() {
-        todo!("Implement Reindex - needs response to confirm reindexing")
+        /* TODO */
+        // Implement Reindex
+        // Needs response to confirm reindexing
     }
+    fn up(&mut self) {
+        if self.buffer_index > 0 {
+            self.buffer_index -= 1;
+            self.user_input = self.command_buffer[self.buffer_index].clone();
+        }
+    }
+    fn down(&mut self) {
+        if self.buffer_index < self.command_buffer.len() {
+            self.buffer_index += 1;
+            if self.buffer_index == self.command_buffer.len() {
+                self.user_input = ":".to_string();
+            }
+            else {
+                self.user_input = self.command_buffer[self.buffer_index].clone();
+            }
+        }
+    }
+        // if self.buffer_index < self.command_buffer.len()-1 {
+        // }
 }
-
-    //     self.user_input = ":".to_string();
-    //     // eprintln!("{items:?}");
-    //     items
-    // }
-
 /*
     ************************
     *** Helper Functions ***
